@@ -85,7 +85,7 @@ GeoIPBase = GeoIPMetaclass('GeoIPBase', (object,), {})
 
 
 class GeoIP(GeoIPBase):
-    def __init__(self, filename, flags=0):
+    def __init__(self, filename=None, flags=0, db_contents=None):
         """
         Initialize the class.
 
@@ -101,7 +101,12 @@ class GeoIP(GeoIPBase):
         self._filename = filename
         self._flags = flags
 
-        if self._flags & const.MMAP_CACHE:
+        if filename is None and db_contents is None:
+            raise ValueError('Either filename or db_contents must be specified')
+
+        if db_contents is not None:
+            self._filehandle = StringIO(db_contents)
+        elif self._flags & const.MMAP_CACHE:
             with open(filename, 'rb') as f:
                 access = mmap.ACCESS_READ
                 self._filehandle = mmap.mmap(f.fileno(), 0, access=access)
